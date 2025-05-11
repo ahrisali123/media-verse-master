@@ -1,20 +1,21 @@
 
 import { Sidebar } from "@/components/Sidebar";
 import { ProfileHeader } from "@/components/ProfileHeader";
-import { Dashboard } from "@/components/Dashboard";
+import { PostCreator } from "@/components/PostCreator";
 
-const Index = () => {
+const CreatePost = () => {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <ProfileHeader />
         <div className="flex-1 overflow-y-auto p-6">
-          <Dashboard />
+          <h1 className="text-2xl font-bold mb-6">Create New Post</h1>
+          <PostCreator />
         </div>
       </div>
     </div>
   );
 };
 
-export default Index;
+export default CreatePost;
