@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -18,13 +17,16 @@ export function SettingsContent() {
   const [autoSchedule, setAutoSchedule] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [aiSuggestions, setAiSuggestions] = useState(true);
+  const [tiktokIntegration, setTiktokIntegration] = useState(false);
+  const [reelsSupport, setReelsSupport] = useState(true);
 
   return (
     <Tabs defaultValue="general" className="w-full">
-      <TabsList className="grid grid-cols-4 w-full max-w-md mb-6">
+      <TabsList className="grid grid-cols-5 w-full max-w-md mb-6"> {/* Changed from 4 to 5 columns */}
         <TabsTrigger value="general">General</TabsTrigger>
         <TabsTrigger value="accounts">Accounts</TabsTrigger>
         <TabsTrigger value="notifications">Notifications</TabsTrigger>
+        <TabsTrigger value="features">Features</TabsTrigger> {/* Added new tab */}
         <TabsTrigger value="privacy">Privacy</TabsTrigger>
       </TabsList>
 
@@ -226,6 +228,82 @@ export function SettingsContent() {
               <Switch 
                 defaultChecked 
                 aria-label="Post performance toggle"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="features" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Content Features</CardTitle>
+            <CardDescription>
+              Control content creation capabilities and platform features
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">TikTok Integration</h4>
+                <p className="text-sm text-muted-foreground">
+                  Enable TikTok video posting and analytics
+                </p>
+              </div>
+              <Switch 
+                checked={tiktokIntegration} 
+                onCheckedChange={setTiktokIntegration} 
+                aria-label="TikTok integration toggle"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Reels & Video Support</h4>
+                <p className="text-sm text-muted-foreground">
+                  Enable posting videos and reels to Instagram and TikTok
+                </p>
+              </div>
+              <Switch 
+                checked={reelsSupport} 
+                onCheckedChange={setReelsSupport} 
+                aria-label="Reels support toggle"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">AI Content Generation</h4>
+                <p className="text-sm text-muted-foreground">
+                  Generate captions, hashtags and content suggestions using AI
+                </p>
+              </div>
+              <Switch 
+                checked={aiSuggestions}
+                onCheckedChange={setAiSuggestions}
+                aria-label="AI content generation toggle"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Best Time to Post Analysis</h4>
+                <p className="text-sm text-muted-foreground">
+                  Automatically analyze past engagement for optimal posting times
+                </p>
+              </div>
+              <Switch 
+                defaultChecked
+                aria-label="Best time analysis toggle"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Follower Growth Tracking</h4>
+                <p className="text-sm text-muted-foreground">
+                  Track follower growth across all platforms
+                </p>
+              </div>
+              <Switch 
+                defaultChecked
+                aria-label="Follower tracking toggle"
               />
             </div>
           </CardContent>

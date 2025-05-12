@@ -10,27 +10,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { PostCard } from "./PostCard";
-import { Camera, Link, Calendar as CalendarIcon, Video, WandSparkles, TimerIcon, UserRound } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { WandSparkles } from "lucide-react";
 import { ContentAssistant } from "./ContentAssistant";
 import { BestTimeToPost } from "./BestTimeToPost";
+import { PostTypeSelector } from "./post-creator/PostTypeSelector";
+import { PlatformSelector } from "./post-creator/PlatformSelector";
+import { PostScheduler } from "./post-creator/PostScheduler";
+import { MediaUpload } from "./post-creator/MediaUpload";
+import { PostPreview } from "./post-creator/PostPreview";
 
 export function PostCreator() {
   const [content, setContent] = useState("");
@@ -43,24 +30,6 @@ export function PostCreator() {
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [postType, setPostType] = useState<"image" | "video" | "reel">("image");
   const [activeTab, setActiveTab] = useState("create");
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      // Simulate file upload
-      setTimeout(() => {
-        if (file.type.includes("image")) {
-          setImage("https://source.unsplash.com/random/800x600/?nature");
-          setVideo("");
-        } else if (file.type.includes("video")) {
-          setVideo("https://example.com/video.mp4");
-          setImage("https://source.unsplash.com/random/800x600/?video-thumbnail");
-        }
-        setIsUploading(false);
-      }, 1500);
-    }
-  };
 
   const handleSubmit = () => {
     // Logic for scheduling or posting would go here
@@ -92,32 +61,7 @@ export function PostCreator() {
                 <CardTitle>Create New Post</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 flex-grow">
-                <div className="flex gap-2">
-                  <Button 
-                    variant={postType === "image" ? "default" : "outline"} 
-                    onClick={() => setPostType("image")}
-                    className="flex-1"
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    Image
-                  </Button>
-                  <Button 
-                    variant={postType === "video" ? "default" : "outline"} 
-                    onClick={() => setPostType("video")}
-                    className="flex-1"
-                  >
-                    <Video className="mr-2 h-4 w-4" />
-                    Video
-                  </Button>
-                  <Button 
-                    variant={postType === "reel" ? "default" : "outline"} 
-                    onClick={() => setPostType("reel")}
-                    className="flex-1"
-                  >
-                    <Video className="mr-2 h-4 w-4" />
-                    Reel
-                  </Button>
-                </div>
+                <PostTypeSelector postType={postType} setPostType={setPostType} />
                 
                 <Textarea 
                   placeholder="What's on your mind?"
@@ -127,59 +71,22 @@ export function PostCreator() {
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="platforms">Platforms</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select platforms" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="twitter">Twitter</SelectItem>
-                        <SelectItem value="linkedin">LinkedIn</SelectItem>
-                        <SelectItem value="tiktok">TikTok</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <PlatformSelector 
+                    selectedPlatforms={selectedPlatforms}
+                    setSelectedPlatforms={setSelectedPlatforms}
+                  />
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="schedule">Schedule</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "pl-3 text-left font-normal",
-                              !selectedDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP") : "Pick date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={setSelectedDate}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      
-                      <Input 
-                        type="time" 
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                  <PostScheduler
+                    selectedDate={selectedDate}
+                    setSelectedDate={setSelectedDate}
+                    selectedTime={selectedTime}
+                    setSelectedTime={setSelectedTime}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label>Media</Label>
+                    <label>Media</label>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -190,69 +97,15 @@ export function PostCreator() {
                       AI Assist
                     </Button>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="col-span-2">
-                      <Input 
-                        type="file" 
-                        id="media-upload"
-                        className="hidden"
-                        accept={postType === "image" ? "image/*" : "video/*"}
-                        onChange={handleFileChange}
-                      />
-                      <Label 
-                        htmlFor="media-upload" 
-                        className="flex items-center justify-center gap-2 border-2 border-dashed rounded-md p-4 hover:bg-secondary/50 transition-colors cursor-pointer"
-                      >
-                        {postType === "image" ? (
-                          <>
-                            <Camera size={18} />
-                            <span>Upload image</span>
-                          </>
-                        ) : (
-                          <>
-                            <Video size={18} />
-                            <span>Upload {postType}</span>
-                          </>
-                        )}
-                      </Label>
-                    </div>
-                    <Button variant="outline" className="flex items-center justify-center gap-2">
-                      <Link size={18} />
-                      <span>Add URL</span>
-                    </Button>
-                  </div>
-                  
-                  {isUploading && (
-                    <div className="h-2 w-full bg-secondary rounded overflow-hidden">
-                      <div className="h-2 bg-brand-500 animate-pulse rounded" style={{ width: "60%" }} />
-                    </div>
-                  )}
-                  
-                  {image && (
-                    <div className="relative mt-2">
-                      <img 
-                        src={image} 
-                        alt="Preview" 
-                        className="rounded-md w-full h-auto max-h-[200px] object-cover"
-                      />
-                      {video && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
-                          <Video size={48} className="text-white opacity-70" />
-                        </div>
-                      )}
-                      <Button 
-                        variant="destructive" 
-                        size="sm" 
-                        className="absolute top-2 right-2"
-                        onClick={() => {
-                          setImage("");
-                          setVideo("");
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  )}
+                  <MediaUpload
+                    postType={postType}
+                    image={image}
+                    video={video}
+                    setImage={setImage}
+                    setVideo={setVideo}
+                    isUploading={isUploading}
+                    setIsUploading={setIsUploading}
+                  />
                 </div>
               </CardContent>
               <CardFooter className="border-t p-4">
@@ -274,77 +127,7 @@ export function PostCreator() {
           </div>
           
           <div>
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="instagram" className="w-full">
-                  <TabsList className="grid grid-cols-5 mb-4">
-                    <TabsTrigger value="instagram">Instagram</TabsTrigger>
-                    <TabsTrigger value="facebook">Facebook</TabsTrigger>
-                    <TabsTrigger value="twitter">Twitter</TabsTrigger>
-                    <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
-                    <TabsTrigger value="tiktok">TikTok</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="instagram" className="m-0">
-                    <PostCard
-                      content={content || "Your post preview will appear here..."}
-                      author="Your Account"
-                      date="Just now"
-                      platform="instagram"
-                      status="draft"
-                      image={image || undefined}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="facebook" className="m-0">
-                    <PostCard
-                      content={content || "Your post preview will appear here..."}
-                      author="Your Account"
-                      date="Just now"
-                      platform="facebook"
-                      status="draft"
-                      image={image || undefined}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="twitter" className="m-0">
-                    <PostCard
-                      content={content || "Your post preview will appear here..."}
-                      author="Your Account"
-                      date="Just now"
-                      platform="twitter"
-                      status="draft"
-                      image={image || undefined}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="linkedin" className="m-0">
-                    <PostCard
-                      content={content || "Your post preview will appear here..."}
-                      author="Your Account"
-                      date="Just now"
-                      platform="linkedin"
-                      status="draft"
-                      image={image || undefined}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="tiktok" className="m-0">
-                    <PostCard
-                      content={content || "Your post preview will appear here..."}
-                      author="Your Account"
-                      date="Just now"
-                      platform="instagram" // Using instagram as base styling for now
-                      status="draft"
-                      image={image || undefined}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+            <PostPreview content={content} image={image} />
           </div>
         </div>
       </TabsContent>
