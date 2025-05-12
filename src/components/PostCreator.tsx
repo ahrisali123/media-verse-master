@@ -27,7 +27,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { PostCard } from "./PostCard";
-import { Camera, Link, Calendar as CalendarIcon, Video, MagicWand, TimerIcon, UserRound } from "lucide-react";
+import { Camera, Link, Calendar as CalendarIcon, Video, WandSparkles, TimerIcon, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ContentAssistant } from "./ContentAssistant";
 import { BestTimeToPost } from "./BestTimeToPost";
@@ -186,7 +186,7 @@ export function PostCreator() {
                       onClick={() => setShowAiAssistant(true)}
                       className="h-8 px-2 text-xs"
                     >
-                      <MagicWand className="mr-1 h-3 w-3" />
+                      <WandSparkles className="mr-1 h-3 w-3" />
                       AI Assist
                     </Button>
                   </div>
@@ -261,7 +261,7 @@ export function PostCreator() {
                     variant="outline" 
                     onClick={() => setActiveTab("ai")} 
                   >
-                    <MagicWand className="mr-2 h-4 w-4" />
+                    <WandSparkles className="mr-2 h-4 w-4" />
                     AI Assist
                   </Button>
                   <div className="space-x-2">
