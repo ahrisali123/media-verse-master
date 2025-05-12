@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 262 83% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -91,3 +91,4 @@
     @apply rounded-xl border bg-card text-card-foreground shadow p-5 hover:shadow-md transition-shadow;
   }
 }
+

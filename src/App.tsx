@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import CalendarPage from "./pages/Calendar";
 import CreatePost from "./pages/CreatePost";
 import AnalyticsPage from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
