@@ -11,7 +11,7 @@ interface PostCardProps {
   author: string;
   authorImage?: string;
   date: string;
-  platform: "facebook" | "twitter" | "instagram" | "linkedin";
+  platform: "facebook" | "twitter" | "instagram" | "linkedin" | "tiktok";
   status: "scheduled" | "published" | "draft";
   engagement?: {
     likes: number;
