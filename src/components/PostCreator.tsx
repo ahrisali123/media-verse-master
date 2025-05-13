@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, 
@@ -18,6 +17,8 @@ import { PlatformSelector } from "./post-creator/PlatformSelector";
 import { PostScheduler } from "./post-creator/PostScheduler";
 import { MediaUpload } from "./post-creator/MediaUpload";
 import { PostPreview } from "./post-creator/PostPreview";
+import { usePosts } from "@/hooks/usePosts";
+import { toast } from "@/components/ui/sonner";
 
 export function PostCreator() {
   const [content, setContent] = useState("");
@@ -25,24 +26,60 @@ export function PostCreator() {
   const [selectedTime, setSelectedTime] = useState("09:00");
   const [selectedPlatforms, setSelectedPlatforms] = useState(["instagram"]);
   const [image, setImage] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [video, setVideo] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [postType, setPostType] = useState<"image" | "video" | "reel">("image");
   const [activeTab, setActiveTab] = useState("create");
+  
+  const { createPost, isUploading } = usePosts();
 
   const handleSubmit = () => {
-    // Logic for scheduling or posting would go here
-    console.log({
+    // Create a Date object combining the selected date and time
+    let scheduleTime: Date | undefined = undefined;
+    
+    if (selectedDate) {
+      scheduleTime = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      scheduleTime.setHours(hours, minutes);
+    }
+    
+    createPost({
       content,
-      date: selectedDate,
-      time: selectedTime,
       platforms: selectedPlatforms,
-      image,
-      video,
-      postType
+      scheduleTime,
+      image: imageFile || undefined,
+      video: videoFile || undefined
     });
-    alert("Post scheduled successfully!");
+    
+    // Reset form after submission
+    setContent("");
+    setSelectedDate(undefined);
+    setSelectedTime("09:00");
+    setImage("");
+    setVideo("");
+    setImageFile(null);
+    setVideoFile(null);
+  };
+
+  const handleFileChange = (file: File | null) => {
+    if (!file) return;
+    
+    if (file.type.includes("image")) {
+      setImageFile(file);
+      // Create a temporary preview URL
+      const imageUrl = URL.createObjectURL(file);
+      setImage(imageUrl);
+      setVideo("");
+      setVideoFile(null);
+    } else if (file.type.includes("video")) {
+      setVideoFile(file);
+      // For video, we'd typically show a thumbnail, but for simplicity:
+      const videoUrl = URL.createObjectURL(file);
+      setVideo(videoUrl);
+      // Set a placeholder image for the video thumbnail
+      setImage("https://source.unsplash.com/random/800x600/?video-thumbnail");
+    }
   };
 
   return (
@@ -104,7 +141,8 @@ export function PostCreator() {
                     setImage={setImage}
                     setVideo={setVideo}
                     isUploading={isUploading}
-                    setIsUploading={setIsUploading}
+                    setIsUploading={() => {}}
+                    onFileChange={handleFileChange}
                   />
                 </div>
               </CardContent>
@@ -118,8 +156,23 @@ export function PostCreator() {
                     AI Assist
                   </Button>
                   <div className="space-x-2">
-                    <Button variant="outline">Save as Draft</Button>
-                    <Button onClick={handleSubmit}>Schedule Post</Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        createPost({
+                          content,
+                          platforms: selectedPlatforms,
+                          image: imageFile || undefined,
+                          video: videoFile || undefined
+                        });
+                        toast.success("Post saved as draft");
+                      }}
+                    >
+                      Save as Draft
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={isUploading}>
+                      {selectedDate ? "Schedule Post" : "Post Now"}
+                    </Button>
                   </div>
                 </div>
               </CardFooter>

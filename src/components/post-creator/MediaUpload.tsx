@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Camera, Link, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,6 +12,7 @@ interface MediaUploadProps {
   setVideo: (value: string) => void;
   isUploading: boolean;
   setIsUploading: (value: boolean) => void;
+  onFileChange?: (file: File | null) => void;
 }
 
 export function MediaUpload({
@@ -22,24 +22,31 @@ export function MediaUpload({
   setImage,
   setVideo,
   isUploading,
-  setIsUploading
+  setIsUploading,
+  onFileChange
 }: MediaUploadProps) {
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setIsUploading(true);
-      // Simulate file upload
-      setTimeout(() => {
-        if (file.type.includes("image")) {
-          setImage("https://source.unsplash.com/random/800x600/?nature");
-          setVideo("");
-        } else if (file.type.includes("video")) {
-          setVideo("https://example.com/video.mp4");
-          setImage("https://source.unsplash.com/random/800x600/?video-thumbnail");
-        }
+      
+      if (onFileChange) {
+        onFileChange(file);
         setIsUploading(false);
-      }, 1500);
+      } else {
+        // Fallback to the old behavior
+        setTimeout(() => {
+          if (file.type.includes("image")) {
+            setImage("https://source.unsplash.com/random/800x600/?nature");
+            setVideo("");
+          } else if (file.type.includes("video")) {
+            setVideo("https://example.com/video.mp4");
+            setImage("https://source.unsplash.com/random/800x600/?video-thumbnail");
+          }
+          setIsUploading(false);
+        }, 1500);
+      }
     }
   };
 
@@ -102,6 +109,7 @@ export function MediaUpload({
             onClick={() => {
               setImage("");
               setVideo("");
+              if (onFileChange) onFileChange(null);
             }}
           >
             Remove
