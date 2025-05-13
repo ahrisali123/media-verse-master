@@ -1,11 +1,17 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize the Supabase client
+// Initialize the Supabase client with error handling
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables. Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
+}
+
+export const supabase = createClient(
+  supabaseUrl || 'https://your-supabase-url.supabase.co',
+  supabaseAnonKey || 'your-anon-key-placeholder'
+);
 
 // Type definitions for our database tables
 export type Profile = {
