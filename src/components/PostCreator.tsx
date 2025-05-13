@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card, 
@@ -31,6 +32,7 @@ export function PostCreator() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [postType, setPostType] = useState<"image" | "video" | "reel">("image");
   const [activeTab, setActiveTab] = useState("create");
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
   
   const { createPost, isUploading } = usePosts();
 
