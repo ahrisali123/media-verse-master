@@ -9,13 +9,182 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      post_engagements: {
+        Row: {
+          comments: number
+          id: string
+          likes: number
+          platform: string
+          post_id: string
+          recorded_at: string
+          shares: number
+        }
+        Insert: {
+          comments?: number
+          id?: string
+          likes?: number
+          platform: string
+          post_id: string
+          recorded_at?: string
+          shares?: number
+        }
+        Update: {
+          comments?: number
+          id?: string
+          likes?: number
+          platform?: string
+          post_id?: string
+          recorded_at?: string
+          shares?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_engagements_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          platforms: string[]
+          profile_id: string
+          published_at: string | null
+          schedule_time: string | null
+          status: string | null
+          video_url: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          platforms?: string[]
+          profile_id: string
+          published_at?: string | null
+          schedule_time?: string | null
+          status?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          platforms?: string[]
+          profile_id?: string
+          published_at?: string | null
+          schedule_time?: string | null
+          status?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      social_accounts: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          id: string
+          platform: string
+          profile_id: string
+          refresh_token: string | null
+          token_expires_at: string | null
+          username: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          platform: string
+          profile_id: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          username: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          platform?: string
+          profile_id?: string
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_accounts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_best_posting_times: {
+        Args: { p_profile_id: string }
+        Returns: {
+          platform: string
+          day_of_week: number
+          hour_of_day: number
+          engagement_score: number
+        }[]
+      }
+      get_engagement_by_platform: {
+        Args: { p_profile_id: string; p_start_date: string }
+        Returns: {
+          platform: string
+          total_likes: number
+          total_comments: number
+          total_shares: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
