@@ -1,4 +1,3 @@
-
 import { supabase } from "./supabase";
 
 // Social media platform API interfaces
@@ -13,119 +12,278 @@ interface InstagramPost {
   image_url: string;
 }
 
-interface LinkedInPost {
-  content: string;
-  visibility: "PUBLIC" | "CONNECTIONS";
-  mediaUrls?: string[];
-}
-
-interface TikTokPost {
-  text: string;
-  video_url: string;
-}
-
 // Social media API service
 export const socialMediaAPI = {
-  // Facebook API functions
+  // Facebook API functions - using real Facebook Graph API
   facebook: {
     getPosts: async (accessToken: string) => {
       try {
-        // This would use the Facebook Graph API in production
-        // For now, we simulate the response
-        return {
-          posts: [
-            { id: "123", message: "Post 1", created_time: new Date().toISOString(), likes: 123, comments: 45, shares: 12 },
-            { id: "124", message: "Post 2", created_time: new Date(Date.now() - 86400000).toISOString(), likes: 55, comments: 8, shares: 3 }
-          ],
-          error: null
-        };
+        const response = await fetch(
+          `https://graph.facebook.com/v18.0/me/feed?fields=id,message,created_time,attachments,insights.metric(post_impressions,post_reactions_by_type_total,post_clicks)&access_token=${accessToken}`
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || "Failed to fetch Facebook posts");
+        }
+        
+        const data = await response.json();
+        
+        const posts = data.data.map((post: any) => ({
+          id: post.id,
+          message: post.message || "",
+          created_time: post.created_time,
+          media_url: post.attachments?.data[0]?.media?.image?.src || null,
+          video_url: post.attachments?.data[0]?.media?.source || null,
+          likes: post.insights?.data?.find((i: any) => i.name === "post_reactions_by_type_total")?.values[0]?.value?.like || 0,
+          comments: 0, // Facebook Graph API doesn't directly provide comment count in this endpoint
+          shares: 0, // Facebook Graph API doesn't directly provide share count in this endpoint
+        }));
+        
+        return { posts, error: null };
       } catch (error: any) {
+        console.error("Facebook API error:", error);
         return { posts: null, error: error.message };
       }
     },
     
     createPost: async (accessToken: string, post: FacebookPost) => {
       try {
-        // This would use the Facebook Graph API in production
+        const params = new URLSearchParams();
+        params.append('message', post.message);
+        
+        if (post.link) {
+          params.append('link', post.link);
+        }
+        
+        const response = await fetch(
+          `https://graph.facebook.com/v18.0/me/feed?access_token=${accessToken}`,
+          {
+            method: 'POST',
+            body: params
+          }
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || "Failed to create Facebook post");
+        }
+        
+        const data = await response.json();
         return {
           success: true,
-          postId: `fb-${Date.now()}`,
+          postId: data.id,
           error: null
         };
       } catch (error: any) {
+        console.error("Facebook API error:", error);
         return { success: false, postId: null, error: error.message };
       }
     },
     
     getAnalytics: async (accessToken: string, postId: string) => {
       try {
-        // This would use the Facebook Graph API in production
+        const response = await fetch(
+          `https://graph.facebook.com/v18.0/${postId}/insights?metric=post_impressions,post_reactions_by_type_total,post_clicks&access_token=${accessToken}`
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || "Failed to fetch Facebook analytics");
+        }
+        
+        const data = await response.json();
+        
+        const impressions = data.data.find((item: any) => item.name === 'post_impressions')?.values[0]?.value || 0;
+        const clicks = data.data.find((item: any) => item.name === 'post_clicks')?.values[0]?.value || 0;
+        const reactions = data.data.find((item: any) => item.name === 'post_reactions_by_type_total')?.values[0]?.value || {};
+        
+        const likes = reactions.like || 0;
+        
         return {
           analytics: {
-            impressions: 1245,
-            reach: 987,
-            engagement: 178,
-            engagement_rate: 0.18,
-            clicks: 45
+            impressions,
+            reach: Math.round(impressions * 0.8), // Estimated reach based on impressions
+            engagement: likes + clicks,
+            engagement_rate: impressions > 0 ? ((likes + clicks) / impressions) : 0,
+            clicks
           },
           error: null
         };
       } catch (error: any) {
+        console.error("Facebook API error:", error);
         return { analytics: null, error: error.message };
       }
     }
   },
   
-  // Instagram API functions
+  // Instagram API functions - using real Instagram Graph API
   instagram: {
     getPosts: async (accessToken: string) => {
       try {
-        // This would use the Instagram Graph API in production
+        // First, get user's Instagram Business Account ID
+        const userResponse = await fetch(
+          `https://graph.facebook.com/v18.0/me/accounts?fields=instagram_business_account&access_token=${accessToken}`
+        );
+        
+        if (!userResponse.ok) {
+          const errorData = await userResponse.json();
+          throw new Error(errorData.error?.message || "Failed to fetch Instagram account");
+        }
+        
+        const userData = await userResponse.json();
+        const instagramAccountId = userData.data[0]?.instagram_business_account?.id;
+        
+        if (!instagramAccountId) {
+          throw new Error("No Instagram Business Account connected to this Facebook Page");
+        }
+        
+        // Fetch media from Instagram
+        const mediaResponse = await fetch(
+          `https://graph.facebook.com/v18.0/${instagramAccountId}/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count,children{media_url,media_type}&access_token=${accessToken}`
+        );
+        
+        if (!mediaResponse.ok) {
+          const errorData = await mediaResponse.json();
+          throw new Error(errorData.error?.message || "Failed to fetch Instagram posts");
+        }
+        
+        const mediaData = await mediaResponse.json();
+        
+        const posts = mediaData.data.map((post: any) => ({
+          id: post.id,
+          caption: post.caption || "",
+          media_url: post.media_type === "VIDEO" ? post.thumbnail_url : post.media_url,
+          video_url: post.media_type === "VIDEO" ? post.media_url : null,
+          media_type: post.media_type,
+          permalink: post.permalink,
+          timestamp: post.timestamp,
+          likes: post.like_count || 0,
+          comments: post.comments_count || 0,
+          children: post.children?.data?.map((child: any) => ({
+            media_url: child.media_url,
+            media_type: child.media_type
+          }))
+        }));
+        
         return {
-          posts: [
-            { id: "ig123", caption: "Instagram post 1", media_url: "https://picsum.photos/500/500", timestamp: new Date().toISOString(), likes: 423, comments: 87 },
-            { id: "ig124", caption: "Instagram post 2", media_url: "https://picsum.photos/500/501", timestamp: new Date(Date.now() - 86400000).toISOString(), likes: 218, comments: 32 }
-          ],
+          posts,
           error: null
         };
       } catch (error: any) {
+        console.error("Instagram API error:", error);
         return { posts: null, error: error.message };
       }
     },
     
     createPost: async (accessToken: string, post: InstagramPost) => {
       try {
-        // This would use the Instagram Graph API in production
+        // Step 1: Get Instagram Business Account ID
+        const userResponse = await fetch(
+          `https://graph.facebook.com/v18.0/me/accounts?fields=instagram_business_account&access_token=${accessToken}`
+        );
+        
+        if (!userResponse.ok) {
+          const errorData = await userResponse.json();
+          throw new Error(errorData.error?.message || "Failed to fetch Instagram account");
+        }
+        
+        const userData = await userResponse.json();
+        const instagramAccountId = userData.data[0]?.instagram_business_account?.id;
+        
+        if (!instagramAccountId) {
+          throw new Error("No Instagram Business Account connected to this Facebook Page");
+        }
+        
+        // Step 2: Create container
+        const containerParams = new URLSearchParams();
+        containerParams.append('image_url', post.image_url);
+        containerParams.append('caption', post.caption);
+        
+        const containerResponse = await fetch(
+          `https://graph.facebook.com/v18.0/${instagramAccountId}/media?access_token=${accessToken}`,
+          {
+            method: 'POST',
+            body: containerParams
+          }
+        );
+        
+        if (!containerResponse.ok) {
+          const errorData = await containerResponse.json();
+          throw new Error(errorData.error?.message || "Failed to create Instagram container");
+        }
+        
+        const containerData = await containerResponse.json();
+        const containerId = containerData.id;
+        
+        // Step 3: Publish container
+        const publishParams = new URLSearchParams();
+        publishParams.append('creation_id', containerId);
+        
+        const publishResponse = await fetch(
+          `https://graph.facebook.com/v18.0/${instagramAccountId}/media_publish?access_token=${accessToken}`,
+          {
+            method: 'POST',
+            body: publishParams
+          }
+        );
+        
+        if (!publishResponse.ok) {
+          const errorData = await publishResponse.json();
+          throw new Error(errorData.error?.message || "Failed to publish Instagram post");
+        }
+        
+        const publishData = await publishResponse.json();
+        
         return {
           success: true,
-          postId: `ig-${Date.now()}`,
+          postId: publishData.id,
           error: null
         };
       } catch (error: any) {
+        console.error("Instagram API error:", error);
         return { success: false, postId: null, error: error.message };
       }
     },
     
     getAnalytics: async (accessToken: string, postId: string) => {
       try {
-        // This would use the Instagram Graph API in production
+        // Get insights for the media
+        const response = await fetch(
+          `https://graph.facebook.com/v18.0/${postId}/insights?metric=impressions,reach,engagement,saved&access_token=${accessToken}`
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || "Failed to fetch Instagram analytics");
+        }
+        
+        const data = await response.json();
+        
+        const impressions = data.data.find((item: any) => item.name === 'impressions')?.values[0]?.value || 0;
+        const reach = data.data.find((item: any) => item.name === 'reach')?.values[0]?.value || 0;
+        const engagement = data.data.find((item: any) => item.name === 'engagement')?.values[0]?.value || 0;
+        const saves = data.data.find((item: any) => item.name === 'saved')?.values[0]?.value || 0;
+        
         return {
           analytics: {
-            impressions: 2864,
-            reach: 2145,
-            profile_visits: 124,
-            follows: 18,
-            saves: 32
+            impressions,
+            reach,
+            engagement,
+            profile_visits: Math.round(engagement * 0.2), // Estimated based on engagement
+            follows: Math.round(engagement * 0.05), // Estimated based on engagement
+            saves
           },
           error: null
         };
       } catch (error: any) {
+        console.error("Instagram API error:", error);
         return { analytics: null, error: error.message };
       }
     }
   },
   
-  // LinkedIn API functions
+  // LinkedIn and TikTok APIs are left as placeholders
   linkedin: {
     getPosts: async (accessToken: string) => {
       try {
@@ -142,7 +300,7 @@ export const socialMediaAPI = {
       }
     },
     
-    createPost: async (accessToken: string, post: LinkedInPost) => {
+    createPost: async (accessToken: string, post: any) => {
       try {
         // This would use the LinkedIn API in production
         return {
@@ -174,7 +332,6 @@ export const socialMediaAPI = {
     }
   },
   
-  // TikTok API functions
   tiktok: {
     getVideos: async (accessToken: string) => {
       try {
@@ -191,7 +348,7 @@ export const socialMediaAPI = {
       }
     },
     
-    createVideo: async (accessToken: string, post: TikTokPost) => {
+    createVideo: async (accessToken: string, post: any) => {
       try {
         // This would use the TikTok API in production
         return {

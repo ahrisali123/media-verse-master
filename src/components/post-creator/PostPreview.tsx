@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface PostPreviewProps {
   content: string;
   image?: string;
+  video?: string;
 }
 
-export function PostPreview({ content, image }: PostPreviewProps) {
+export function PostPreview({ content, image, video }: PostPreviewProps) {
   return (
     <Card className="h-full">
       <CardHeader>
@@ -32,6 +33,8 @@ export function PostPreview({ content, image }: PostPreviewProps) {
               platform="instagram"
               status="draft"
               image={image || undefined}
+              video={video || undefined}
+              isReel={Boolean(video)}
             />
           </TabsContent>
           
@@ -43,6 +46,7 @@ export function PostPreview({ content, image }: PostPreviewProps) {
               platform="facebook"
               status="draft"
               image={image || undefined}
+              video={video || undefined}
             />
           </TabsContent>
           
@@ -54,6 +58,7 @@ export function PostPreview({ content, image }: PostPreviewProps) {
               platform="twitter"
               status="draft"
               image={image || undefined}
+              video={video || undefined}
             />
           </TabsContent>
           
@@ -65,6 +70,7 @@ export function PostPreview({ content, image }: PostPreviewProps) {
               platform="linkedin"
               status="draft"
               image={image || undefined}
+              video={video || undefined}
             />
           </TabsContent>
           
@@ -73,9 +79,10 @@ export function PostPreview({ content, image }: PostPreviewProps) {
               content={content || "Your post preview will appear here..."}
               author="Your Account"
               date="Just now"
-              platform="tiktok" // Changed from instagram to tiktok
+              platform="tiktok"
               status="draft"
               image={image || undefined}
+              video={video || undefined}
             />
           </TabsContent>
         </Tabs>

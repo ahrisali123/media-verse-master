@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { socialMediaAPI, socialAccountsManager, analyticsAggregator } from '@/lib/socialMediaApis';
@@ -69,15 +70,15 @@ export const useSocialMedia = () => {
       
       if (error) {
         toast.error(`Failed to disconnect ${platform}: ${error}`);
-        return { success: false };
+        return { success: false, error };
       }
       
       toast.success(`Successfully disconnected ${platform} account`);
       await loadUserAccounts(); // Refresh accounts list
-      return { success };
+      return { success, error: null };
     } catch (error: any) {
       toast.error(`Error disconnecting ${platform}: ${error.message}`);
-      return { success: false };
+      return { success: false, error: error.message };
     } finally {
       setIsLoading(false);
     }
@@ -145,14 +146,14 @@ export const useSocialMedia = () => {
       
       if (result.error) {
         toast.error(`Failed to create post on ${platform}: ${result.error}`);
-        return { success: false };
+        return { success: false, error: result.error };
       }
       
       toast.success(`Successfully posted to ${platform}`);
-      return { success: true, postId: result.postId || result.videoId };
+      return { success: true, postId: result.postId || result.videoId, error: null };
     } catch (error: any) {
       toast.error(`Error creating post on ${platform}: ${error.message}`);
-      return { success: false };
+      return { success: false, error: error.message };
     } finally {
       setIsLoading(false);
     }
@@ -183,13 +184,13 @@ export const useSocialMedia = () => {
       
       if (result.error) {
         toast.error(`Failed to fetch analytics from ${platform}: ${result.error}`);
-        return { analytics: null };
+        return { analytics: null, error: result.error };
       }
       
-      return { analytics: result.analytics };
+      return { analytics: result.analytics, error: null };
     } catch (error: any) {
       toast.error(`Error fetching analytics from ${platform}: ${error.message}`);
-      return { analytics: null };
+      return { analytics: null, error: error.message };
     } finally {
       setIsLoading(false);
     }
@@ -197,7 +198,7 @@ export const useSocialMedia = () => {
 
   // Get combined analytics across all platforms
   const getCombinedAnalytics = async (daysAgo = 30) => {
-    if (!user) return { analytics: [] };
+    if (!user) return { analytics: [], error: "User not authenticated" };
     
     setIsLoading(true);
     try {
@@ -205,13 +206,13 @@ export const useSocialMedia = () => {
       
       if (error) {
         toast.error(`Failed to load combined analytics: ${error}`);
-        return { analytics: [] };
+        return { analytics: [], error };
       }
       
-      return { analytics };
+      return { analytics, error: null };
     } catch (error: any) {
       toast.error(`Error loading combined analytics: ${error.message}`);
-      return { analytics: [] };
+      return { analytics: [], error: error.message };
     } finally {
       setIsLoading(false);
     }
@@ -219,7 +220,7 @@ export const useSocialMedia = () => {
 
   // Get best posting times
   const getBestPostingTimes = async () => {
-    if (!user) return { times: [] };
+    if (!user) return { times: [], error: "User not authenticated" };
     
     setIsLoading(true);
     try {
@@ -227,13 +228,13 @@ export const useSocialMedia = () => {
       
       if (error) {
         toast.error(`Failed to load best posting times: ${error}`);
-        return { times: [] };
+        return { times: [], error };
       }
       
-      return { times };
+      return { times, error: null };
     } catch (error: any) {
       toast.error(`Error loading best posting times: ${error.message}`);
-      return { times: [] };
+      return { times: [], error: error.message };
     } finally {
       setIsLoading(false);
     }

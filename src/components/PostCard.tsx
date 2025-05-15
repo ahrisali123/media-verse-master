@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -8,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageSquare, Share2 } from "lucide-react";
+import { Heart, MessageSquare, Share2, Video } from "lucide-react";
 
 // Define the PostCardProps interface
 export interface PostCardProps {
@@ -19,6 +20,8 @@ export interface PostCardProps {
   platform: "instagram" | "facebook" | "twitter" | "linkedin" | "tiktok";
   status: "published" | "scheduled" | "draft";
   image?: string;
+  video?: string;
+  isReel?: boolean;
   engagement?: {
     likes: number;
     comments: number;
@@ -34,6 +37,8 @@ export function PostCard({
   platform,
   status,
   image,
+  video,
+  isReel,
   engagement,
 }: PostCardProps) {
   return (
@@ -52,19 +57,44 @@ export function PostCard({
                 <Badge variant="secondary">Scheduled</Badge>
               )}
               {status === "draft" && <Badge variant="outline">Draft</Badge>}
+              {isReel && (
+                <Badge variant="destructive">Reel</Badge>
+              )}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <p>{content}</p>
-        {image && (
+        {video ? (
+          <div className="mt-4 relative">
+            {image ? (
+              <div className="relative">
+                <img
+                  src={image}
+                  alt="Video Thumbnail"
+                  className="mt-4 rounded-md w-full h-auto"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Video className="h-12 w-12 text-white bg-black bg-opacity-50 rounded-full p-2" />
+                </div>
+              </div>
+            ) : (
+              <video 
+                src={video}
+                controls
+                className="mt-4 rounded-md w-full h-auto"
+                poster={image}
+              />
+            )}
+          </div>
+        ) : image ? (
           <img
             src={image}
             alt="Post Image"
             className="mt-4 rounded-md w-full h-auto"
           />
-        )}
+        ) : null}
       </CardContent>
       {engagement && status === "published" && (
         <CardFooter className="flex justify-between">
