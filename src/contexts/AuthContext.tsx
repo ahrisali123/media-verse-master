@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       toast.success("Login successful!");
-      navigate('/');
+      navigate('/dashboard');  // Update this to redirect to dashboard
     } catch (error: any) {
       toast.error(error.message || "Failed to sign in");
     } finally {

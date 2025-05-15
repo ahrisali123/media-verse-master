@@ -32,8 +32,8 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/landing" element={<Landing />} />
               
-              {/* Make Landing page the default route */}
-              <Route path="/" element={<Navigate to="/landing" replace />} />
+              {/* Make Dashboard the default route for authenticated users */}
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               
               {/* Protected routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />

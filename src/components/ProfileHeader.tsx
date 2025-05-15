@@ -1,5 +1,5 @@
 
-import { Bell } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -11,8 +11,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ProfileHeader() {
+  const { user, profile, signOut } = useAuth();
+  
+  const getInitials = () => {
+    if (profile?.username) {
+      return profile.username.substring(0, 2).toUpperCase();
+    }
+    return user?.email ? user.email.substring(0, 2).toUpperCase() : "??";
+  };
+  
+  const handleSignOut = () => {
+    signOut();
+  };
+
   return (
     <header className="py-4 px-6 border-b flex items-center justify-between">
       <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -27,17 +41,17 @@ export function ProfileHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="" alt="User" />
-                <AvatarFallback className="bg-brand-100 text-brand-800">JP</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url || ""} alt={profile?.username || "User"} />
+                <AvatarFallback className="bg-brand-100 text-brand-800">{getInitials()}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Jane Doe</p>
+                <p className="text-sm font-medium leading-none">{profile?.username || "User"}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  jane.doe@example.com
+                  {user?.email}
                 </p>
               </div>
             </DropdownMenuLabel>
@@ -48,7 +62,10 @@ export function ProfileHeader() {
               <DropdownMenuItem>Billing</DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
