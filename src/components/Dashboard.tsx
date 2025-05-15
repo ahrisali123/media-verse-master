@@ -25,7 +25,7 @@ type PostType = {
 };
 
 export function Dashboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { accounts, loadUserAccounts, getPosts, isLoading } = useSocialMedia();
   const [recentPosts, setRecentPosts] = useState<PostType[]>([]);
   const [upcomingPosts, setUpcomingPosts] = useState<PostType[]>([]);
@@ -51,7 +51,7 @@ export function Dashboard() {
               id: post.id,
               content: post.message || post.caption || "",
               author: account.username,
-              authorImage: user?.avatar_url || "",
+              authorImage: profile?.avatar_url || "",
               date: new Date(post.created_time || post.timestamp).toLocaleString(),
               platform: account.platform as "instagram" | "facebook" | "twitter" | "linkedin" | "tiktok",
               status: "published" as const,
