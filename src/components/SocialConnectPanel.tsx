@@ -53,22 +53,22 @@ export function SocialConnectPanel() {
             const { platform, username } = JSON.parse(atob(state));
             
             // Use our existing connect function from useSocialMedia hook
-            const { success, error } = await useSocialMedia().connectAccount(
+            const result = await useSocialMedia().connectAccount(
               platform,
               accessToken,
               username || `${platform}_user` // Fallback username if none provided
             );
             
-            if (success) {
+            if (result.success) {
               toast({
                 title: "Account connected successfully",
                 description: `Your ${platform} account has been connected.`,
               });
               loadUserAccounts(); // Refresh accounts list
-            } else if (error) {
+            } else {
               toast({
                 title: "Connection failed",
-                description: error,
+                description: "Failed to connect account. Please try again.",
                 variant: "destructive",
               });
             }

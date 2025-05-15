@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { socialMediaAPI, socialAccountsManager, analyticsAggregator } from '@/lib/socialMediaApis';
@@ -34,7 +33,7 @@ export const useSocialMedia = () => {
   const connectAccount = async (platform: string, accessToken: string, username: string) => {
     if (!user) {
       toast.error('You must be logged in to connect social accounts');
-      return;
+      return { success: false, error: 'Not authenticated' };
     }
     
     setIsLoading(true);
@@ -48,15 +47,15 @@ export const useSocialMedia = () => {
       
       if (error) {
         toast.error(`Failed to connect ${platform}: ${error}`);
-        return { success: false };
+        return { success: false, error };
       }
       
       toast.success(`Successfully connected ${platform} account`);
       await loadUserAccounts(); // Refresh accounts list
-      return { success };
+      return { success, error: null };
     } catch (error: any) {
       toast.error(`Error connecting ${platform}: ${error.message}`);
-      return { success: false };
+      return { success: false, error: error.message };
     } finally {
       setIsLoading(false);
     }
